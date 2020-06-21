@@ -21,7 +21,7 @@ What is the preferred way of using the API? This API can be accessed with any pr
 [https://fgn-comments-service.herokuapp.com/](https://fgn-comments-service.herokuapp.com/)
 
 
-## POST : `tweet/comment`
+## POST : `tweet/comment/create`
 
 This route creates comments received on twitter report. The body will carry the owner username and email also the report id
 
@@ -31,19 +31,22 @@ This route creates comments received on twitter report. The body will carry the 
 {"report_id":"integer","comment_body": "string", "comment_origin": "string", "comment_owner_username": "string", "comment_owner_email": "string"}
 ```
 
+Example Request
+Default
+
 > Example Request
 ` Default
 ```js
-var raw = "{\"report_id\":\"integer\",\"comment_body\": \"string\", \"comment_origin\": \"string\", \"comment_owner_username\": \"string\", \"comment_owner_email\": \"string\"}";
+var bodyJson = {"report_id": 63,"comment_body": "This is the comment body", "comment_origin": "Twitter", "comment_owner_username": "name of comment twitter user", "comment_owner_email": "twitteruser@gmail.com"};
 
 
 var requestOptions = {
   method: 'POST',
-  body: raw,
+  body: bodyJson,
   redirect: 'follow'
 };
 
-fetch("tweet/comment", requestOptions)
+fetch("tweet/comment/create", requestOptions)
   .then(response => response.text())
   .then(result => console.log(result))
   .catch(error => console.log('error', error));
@@ -60,51 +63,51 @@ fetch("tweet/comment", requestOptions)
 "response" : "Created"}
 ```
 
-## GET: reports/comments
+## POST : `report/comment/create`
 
-This route returns all the comments in the database without the flagged comments.
+This route creates comments received on report. The body will carry the owner username and email also the report id if the user is not anonymous. If it is anonymous use anonymous as name and anonymous@email.com as email
 
+> BODY 
+
+```json
+{"report_id":"integer","comment_body": "string", "comment_origin": "string", "comment_owner_username": "string", "comment_owner_email": "string"}
+```
+
+Example Request
+Default
 
 > Example Request
-- Default
+` Default
 ```js
-var raw = "";
+var bodyJson = {
+  "report_id": 63,"comment_body": "This is the comment body", "comment_origin": "comment origin", "comment_owner_username": "name of comment owner use anonymous if user is anonymous", "comment_owner_email": "commentownner@gmail.com"};
+
 
 var requestOptions = {
-  method: 'GET',
-  body: raw,
+  method: 'POST',
+  body: bodyJson,
   redirect: 'follow'
 };
 
-fetch("reports/comments", requestOptions)
+fetch("report/comment/create", requestOptions)
   .then(response => response.text())
   .then(result => console.log(result))
   .catch(error => console.log('error', error));
 ```
-
 > Example Response
 
 ```
-200
+201
 ```
 **Body Headers (0)**
 ```json
-{"data" : [{
-    "report_id": "integer",
-    "comment_origin": "string",
-    "comment_body": "string", 
-    "comment_owner": "string", 
-    "votes": "integer", 
-    "replies_count": "integer", 
-    "upvotes": "integer", 
-    "downvotes": "integer" 
-    },],
-"message" : "Comment returned successfully",
-"response" : "Ok"
-}
+{"data" :  [],
+"message" :  "Comment saved successfully",
+"response" : "Created"}
 ```
 
-## GET: report/comment/{report_id}
+
+## GET: report/comments/{report_id}
 
 This route returns all the comments in under a report in the database without the flagged comments.
 
@@ -120,7 +123,7 @@ var requestOptions = {
   redirect: 'follow'
 };
 
-fetch("report/comment/{report_id}", requestOptions)
+fetch("report/comments/{report_id}", requestOptions)
   .then(response => response.text())
   .then(result => console.log(result))
   .catch(error => console.log('error', error));
@@ -151,18 +154,18 @@ fetch("report/comment/{report_id}", requestOptions)
 This route deletes a particular user comment
 
 ## BODY
-```
-"email": "string"
+```json
+{"email": "string"}
 ```
 
 > Example Request
 - Default
 ```js
-var raw = "";
+var bodyJson = {"email": "commentownwer@gmail.com"};
 
 var requestOptions = {
   method: 'DELETE',
-  body: raw,
+  body: bodyJson,
   redirect: 'follow'
 };
 
@@ -190,18 +193,20 @@ fetch("report/comment/{comment_id}", requestOptions)
 This route modifies the comments vote. User should send vote types between *upvote and *downvote. The body of the call must include the comment id
 
 ## BODY
-```
-"vote_type": enum['upvote', 'downvote']
+```json
+{"vote_type": enum["upvote", "downvote"]}
 ```
 
 > Example Request
 - Default
 ```js
-var raw = "\"vote_type\": enum['upvote', 'downvote']";
+var bodyJson = {"vote_type": "downvote"}; //for downvote
+
+var bodyJson = {"vote_type": "upvote"}; //for upvote
 
 var requestOptions = {
   method: 'PATCH',
-  body: raw,
+  body: bodyJson,
   redirect: 'follow'
 };
 
@@ -229,20 +234,20 @@ This route flags comment
 
 > BODY 
 
-"is_flagged": true
+{"is_flagged": true}
 
-```
-"is_flagged": true
+```json
+{"is_flagged": true}
 ```
 
-> xample Request
+> Example Request
 - Default
 ```Js
-var raw = "\"is_flagged\": true";
+var bodyJson = {"is_flagged": true};
 
 var requestOptions = {
   method: 'PATCH',
-  body: raw,
+  body: bodyJson,
   redirect: 'follow'
 };
 
@@ -258,9 +263,11 @@ fetch("reports/comment/flag/{comment_id}", requestOptions)
 ```
 
 **Body Headers (0)**
-```
-'data' => [],
-    202esponse' => 'Accepted'
+```json
+{"data":  [],
+"comment": 36,
+"message": "Comments Flagged Successfully",
+"response": "Accepted"}
 ```
 
 ## PATCH: reports/comment/edit/{comment_id}
@@ -268,19 +275,21 @@ fetch("reports/comment/flag/{comment_id}", requestOptions)
 This routes edits comment
 
 > BODY 
-```
-"comment_body": "string"
-"email": "string"
+```json
+{
+  "comment_body": "string",
+  "email": "string"
+}
 ```
 
 > Example Request
 - Default
 ```js
-var raw = "\"comment_body\": \"string\"";
+var bodyJson = {"comment_body": "Edited comment", "email": "commentedite@email.com"};
 
 var requestOptions = {
   method: 'PATCH',
-  body: raw,
+  body: bodyJson,
   redirect: 'follow'
 };
 
@@ -291,27 +300,27 @@ fetch("reports/comment/edit/{comment_id}", requestOptions)
 Example Response
 202
 Body Headers (0)
-'data' => [],
-                    'message' => 'Comment editted successfully',
-                    'response' => 'Accepted'
+"data": [],
+"message": "Comment editted successfully",
+"response": "Accepted"
 ```
 ## PATCH: reports/comment/reply/vote/{reply_id}
 
 Votes reply
 
 > BODY 
-```
-vote_type: enum['upvote', 'downvote']
+```json
+{"vote_type": "enum['upvote', 'downvote']"}
 ```
 
 > Example Request
 - Default
 ```js
-var raw = "vote_type: enum['upvote', 'downvote']";
+var bodyJson = {"vote_type": "upvote"};
 
 var requestOptions = {
   method: 'PATCH',
-  body: raw,
+  body: bodyJson,
   redirect: 'follow'
 };
 
@@ -327,7 +336,7 @@ fetch("reports/comment/reply/vote/{reply_id}\n", requestOptions)
 **Body Headers (0)**
 ```json
 "data" : {
-    "message" : "Report flag successfully",
+    "message" : "Reply voted successfully",
     "response" : "Ok"
     },
 ```
@@ -336,18 +345,19 @@ fetch("reports/comment/reply/vote/{reply_id}\n", requestOptions)
 This route allows user to edit reply
 
 
-> BODY 
-"reply_body": string
+> BODY
+```json 
+{"reply_body": "string", "email": "reply_owner_email@email.com"}
 
 ```
 > Example Request
 - Default
 ```js
-var raw = "\"reply_body\": string";
+var bodyJson = {"reply_body": "edited reply", "email": "reply_owner_email@email.com"};
 
 var requestOptions = {
   method: 'PATCH',
-  body: raw,
+  body: bodyJson,
   redirect: 'follow'
 };
 
@@ -361,29 +371,30 @@ fetch("reports/comment/edit/reply/{report_id}", requestOptions)
 202
 ```
 **Body Headers (0)**
-```
-'data' => [
-        'message' => 'Reply editted successfully',
-        'response' => 'Accepted'
-    ],
+```json
+{
+  "data": [],
+  "message": "Reply editted successfully",
+  "response": "Accepted",
+}
 ```
 ## PATCH:  reports/comment/reply/flag/{reply_id}
 
 Flags reply
 
 > BODY 
-```
+```json
 "is_flagged": true
 
 ```
 > Example Request
 - Default
 ```js
-var raw = "\"is_flagged\": true";
+var bodyJson = {"is_flagged": true};
 
 var requestOptions = {
   method: 'PATCH',
-  body: raw,
+  body: bodyJson,
   redirect: 'follow'
 };
 
@@ -398,9 +409,9 @@ fetch("reports/comment/reply/flag/{reply_id}\n", requestOptions)
 ```
 **Body Headers (0)**
 ```json
-'data' => [],
-                    'message' => 'Reply flagged successfully',
-                    'response' => 'Accepted'
+"data": [],
+"message" : "Reply flagged successfully",
+"response": "Accepted"
 ```
 ## GET report/comment/{comment_id}/reply/{reply_id}
 
@@ -437,7 +448,7 @@ fetch("report/comment/{comment_id}/reply/{reply_id}", requestOptions)
     "upvotes": "integer",
     "downvotes": "integer" 
     },],
-"message"  : "Comment returned successfully",
+"message"  : "Replies returned successfully",
 "response" : "Ok"
 }
 ```
