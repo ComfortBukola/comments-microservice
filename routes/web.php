@@ -30,3 +30,5 @@ Route::patch('/reports/comment/vote/{comment_id}', ['uses' => 'CommentsControlle
 
 //generate dummy users and comments
 Route::get('/dummy-data','CommentsController@generateDummyData');
+Route::get('/tweets/comment', ['uses' => "TwitterCommentsController@tweetComments"]);
+
